@@ -52,13 +52,22 @@ public class MqttConfiguration {
     @Value("${mqtt.qos:2}")
     private Integer qos;
 
-    @Value("${mqtt.default.file.persistence.path:${user.dir}/data/mqClient}")
+    @Value("${mqtt.default.file.persistence.path}")
     private String persistencePath;
+
+    @Value("${mqtt.clean.session:true}")
+    private boolean cleanSession;
+
+    @Value("${mqtt.auto.reconnect:true}")
+    private boolean autoReconnect;
 
     @PostConstruct
     public void initUri() {
         if (!StringUtils.hasText(serverUri)) {
             serverUri = protocol + "://" + host + ":" + port;
+        }
+        if (!StringUtils.hasText(persistencePath)) {
+            persistencePath = System.getProperty("user.dir") + "/data/mqClient";
         }
     }
 
@@ -78,11 +87,11 @@ public class MqttConfiguration {
         // 设置是否清空session,这里如果设置为false表示服务器会保留客户端的连接记录，
         // 把配置里的 cleanSession 设为false，客户端掉线后 服务器端不会清除session，
         // 当重连后可以接收之前订阅主题的消息。当客户端上线后会接受到它离线的这段时间的消息
-        mqttConnectOptions.setCleanSession(false);
+        mqttConnectOptions.setCleanSession(cleanSession);
         // 设置超时时间 单位为秒
         mqttConnectOptions.setConnectionTimeout(connectTimeout);
         //设置自动重新连接
-        mqttConnectOptions.setAutomaticReconnect(true);
+        mqttConnectOptions.setAutomaticReconnect(autoReconnect);
         // 设置会话心跳时间 单位为秒 服务器会每隔10秒的时间向客户端发送心跳判断客户端是否在线
         // 但这个方法并没有重连的机制
         mqttConnectOptions.setKeepAliveInterval(keepAliveInterval);
