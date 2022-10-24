@@ -83,6 +83,7 @@ public class MqttService {
             // 转换消息为json字符串
             byte[] bytes = mapper.writeValueAsBytes(data);
             MqttMessage mqttMessage = new MqttMessage(bytes);
+            mqttMessage.setQos(configuration.getQos());
             getClient(clientId).publish(topic, mqttMessage);
         } catch (JsonProcessingException e) {
             log.error(String.format("MQTT: 主题[%s]发送消息转换json失败", topic));
@@ -111,7 +112,7 @@ public class MqttService {
      */
     public void subscribe(String clientId, String topic, IMqttMessageListener listener) {
         try {
-            getClient(clientId).subscribe(topic, listener);
+            getClient(clientId).subscribe(topic, configuration.getQos(), listener);
         } catch (MqttException e) {
             log.error(String.format("MQTT: 订阅主题[%s]失败", topic));
         }
